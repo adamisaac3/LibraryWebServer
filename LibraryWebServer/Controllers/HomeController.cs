@@ -112,8 +112,22 @@ namespace LibraryWebServer.Controllers
         [HttpPost]
         public ActionResult ListMyBooks()
         {
-            // TODO: Implement
-            return Json( null );
+
+            using (Team34LibraryContext db = new Team34LibraryContext())
+            {
+                var query = from c in db.CheckedOut
+                            join i in db.Inventory on c.Serial equals i.Serial
+                            join t in db.Titles on i.Isbn equals t.Isbn
+                            where c.CardNum == card
+                            select new
+                            {
+                                t.Title,
+                                t.Author,
+                                i.Serial
+                            };
+
+                return Json(query.ToArray());
+            }
         }
 
 
