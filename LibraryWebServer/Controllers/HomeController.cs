@@ -31,18 +31,24 @@ namespace LibraryWebServer.Controllers
         [HttpPost]
         public IActionResult CheckLogin( string name, int cardnum )
         {
-            // TODO: Fill in. Determine if login is successful or not.
-            bool loginSuccessful = false;
+            using (Team34LibraryContext db = new Team34LibraryContext())
+            {
+                var query = from p in db.Patrons
+                            where name == p.Name && cardnum == p.CardNum
+                            select p;
+                System.Diagnostics.Debug.WriteLine(query.Any());
+                bool loginSuccessful = query.Any();
 
-            if ( !loginSuccessful )
-            {
-                return Json( new { success = false } );
-            }
-            else
-            {
-                user = name;
-                card = cardnum;
-                return Json( new { success = true } );
+                if (!loginSuccessful)
+                {
+                    return Json(new { success = false });
+                }
+                else
+                {
+                    user = name;
+                    card = cardnum;
+                    return Json(new { success = true });
+                }
             }
         }
 
