@@ -36,7 +36,7 @@ namespace LibraryWebServer.Controllers
                 var query = from p in db.Patrons
                             where name == p.Name && cardnum == p.CardNum
                             select p;
-                System.Diagnostics.Debug.WriteLine(query.Any());
+             
                 bool loginSuccessful = query.Any();
 
                 if (!loginSuccessful)
@@ -79,10 +79,26 @@ namespace LibraryWebServer.Controllers
         public ActionResult AllTitles()
         {
 
-            // TODO: Implement
+            using(Team34LibraryContext db = new Team34LibraryContext())
+            {
+                var query = from t in db.Titles
+                            join i in db.Inventory on t.Isbn equals i.Isbn into RightSide
+                            from k in RightSide.DefaultIfEmpty()
+                            join c in db.CheckedOut on k.Serial equals c.Serial into checkedOut
+                            from ch in checkedOut.DefaultIfEmpty()
+                            join p in db.Patrons on ch.CardNum equals p.CardNum into patronGroup
+                            from pa in patronGroup.DefaultIfEmpty()
+                            select new
+                            {
+                                isbn = t.Isbn,
+                                title = t.Title,
+                                author = t.Author,
+                                serial = k.Serial != null ? (uint?)k.Serial : null,
+                                name = pa != null ? pa.Name : ""
+                            };
 
-            return Json( null );
-
+                return Json(query.ToArray());
+            }
         }
 
         /// <summary>
