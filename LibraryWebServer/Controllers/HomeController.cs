@@ -142,10 +142,19 @@ namespace LibraryWebServer.Controllers
         [HttpPost]
         public ActionResult CheckOutBook( int serial )
         {
-            // You may have to cast serial to a (uint)
+            using (Team34LibraryContext db = new Team34LibraryContext())
+            {
+                var checkedOut = new CheckedOut
+                {
+                    CardNum = (uint)card,
+                    Serial = (uint)serial
+                };
 
+                db.CheckedOut.Add(checkedOut);
+                db.SaveChanges();
 
-            return Json( new { success = true } );
+                return Json(new { success = true });
+            }
         }
 
         /// <summary>
@@ -158,9 +167,15 @@ namespace LibraryWebServer.Controllers
         [HttpPost]
         public ActionResult ReturnBook( int serial )
         {
-            // You may have to cast serial to a (uint)
-
-            return Json( new { success = true } );
+            using (Team34LibraryContext db = new Team34LibraryContext())
+            {
+                var checkedOutBook = from c in db.CheckedOut
+                                     where c.CardNum == card && c.Serial == serial
+                                     select c;
+                db.Remove(checkedOutBook.FirstOrDefault());
+                db.SaveChanges();
+            }
+                return Json( new { success = true } );
         }
 
 
